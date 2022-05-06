@@ -1,12 +1,19 @@
 import express from "express";
+import config from './config/default'
+import connectDB from "./db/connect";
+
+const PORT = config.app.port;
+const HOST = config.app.host;
 
 const app = express()
-const port = 3000
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+connectDB().then(() => {
+        app.listen(PORT, HOST, () => {
+            console.log(`Server started at ${HOST}:${PORT}`);
+        })
+    }
+)
