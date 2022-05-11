@@ -1,8 +1,16 @@
 import mongoose, {ConnectOptions} from "mongoose";
 import config from "../config/default";
+import {MongoMemoryServer} from "mongodb-memory-server";
 
-function connectDB() {
-    const dbUri = config.db.dbUri;
+let mongod:MongoMemoryServer | null = null;
+
+export async function connectDB() {
+    let dbUri = config.db.dbUri;
+
+    if (process.env.NODE_ENV === 'test') {
+        mongod = await MongoMemoryServer.create();
+        dbUri = mongod.getUri();
+    }
 
     return mongoose.connect(dbUri, {
         useNewUrlParser: true,
@@ -17,4 +25,16 @@ function connectDB() {
         });
 }
 
-export default connectDB;
+export async function disconnectDB(){
+    try {
+        await mongoose.connection.close();
+        if (mongod) {
+            await mongod.stop();
+        }
+    } catch (err) {
+        console.log(err);
+        process.exit(1);
+    }
+}
+
+

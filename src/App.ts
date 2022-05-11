@@ -1,6 +1,6 @@
-import express from "express";
+import express, {Express} from "express";
 import config from './config/default'
-import connectDB from "./db/connect";
+import {connectDB} from "./db/connect";
 import errorMiddleware from "./middlewares/errorMiddleware";
 import cors from 'cors'
 import router from "./router/routes";
@@ -19,9 +19,16 @@ app.use(cors({
 app.use('/api', router);
 app.use(errorMiddleware);
 
-connectDB().then(() => {
-        app.listen(PORT, HOST, () => {
-            console.log(`Server started at ${HOST}:${PORT}`);
-        })
-    }
-)
+
+function startListening(app: Express){
+    return app.listen(PORT, HOST, () => {
+        console.log(`Server started at ${HOST}:${PORT}`);
+    })
+}
+
+if (process.env.NODE_ENV !== 'test')
+    connectDB().then(() => {
+            startListening(app)
+        }
+    )
+export default app;
