@@ -63,3 +63,16 @@ fetch('http://localhost:5000/auth/login', {
 at <anonymous>:1:1 (из-за CORS)
 3. Postman auth/registration
 4. Browser auth/registration (CORS error)
+
+## 4. router, CORS
+1. Установим CORS и подключим его (npm i cors; npm i @types/cors --save-dev)
+2. В свойство origin запишем: '*' (любые адреса) и выполним предыдущий fetch-запрос. Получим: {message: 'Ошибка при валидации', errors: Array(1)}
+3. Изменим свойство origin на: 'https://learn.javascript.ru' (без / в конце) и выполним предыдущий fetch-запрос. Получим: {message: 'Ошибка при валидации', errors: Array(1)}
+4. Подробнее про CORS можно прочитать в файле CORS.md
+5. Выполним декомпозицию кода перенесём маршруты в отдельный файл, создадим router.
+6. Добавим префикс для всех маршрутов: "api"
+7. Изменим url на http://localhost:5000/api/auth/login и выполним предыдущий fetch-запрос. Получим: {message: 'Ошибка при валидации', errors: Array(1)}
+8. Изменим свойство origin на: config.app.client_url
+9. commit and push
+
+
