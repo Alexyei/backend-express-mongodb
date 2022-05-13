@@ -4,17 +4,26 @@ import {connectDB} from "./db/connect";
 import errorMiddleware from "./middlewares/errorMiddleware";
 import cors from 'cors'
 import router from "./router/routes";
+import UserDto from "./dtos/userDTO";
+import sessionMiddleware from "./middlewares/sessionMiddleware";
+
 
 const PORT = config.app.port;
 const HOST = config.app.host;
 
+declare module 'express-session' {
+    interface SessionData {
+        user: UserDto;
+    }
+}
 
 const app = express()
 app.use(express.json())
-
+app.use(sessionMiddleware)
 app.use(cors({
-    // credentials: true,
-    origin: config.app.client_url
+    credentials: true,
+    origin: config.app.api_url
+    // origin: 'https://learn.javascript.ru'
 }));
 app.use('/api', router);
 app.use(errorMiddleware);

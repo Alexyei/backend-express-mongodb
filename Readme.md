@@ -96,3 +96,68 @@ at <anonymous>:1:1 (из-за CORS)
 6. Можно открыть MongoDBCompass, и увидеть что наша БД осталась без изменений. При тестировании используется другая БД.
 7. Удалим копию исходного файла
 
+## 6. Аутентификация на основе сессий и cookie
+1. Схему работы сессий и куки можно посмотреть здесь: https://www.youtube.com/watch?v=bvQah0k5-eA&list=PL1Nml43UBm6fPP7cW9pAFTdZ_9QX2mBn2
+2. Для быстрого доступа к сессии пользователя, будем использовать redis. По-сути redis это кэш. (npm i redis, типы идут в комплекте). Также не забываем установить redis на компьютер. Для windows нет оффициального дистрибутива (у автора redis 3.2.100 скачанный отсюда: https://github.com/microsoftarchive/redis/releases).
+3. Подключаемся к redis через его client (db->redis.ts). По-умолчанию используется localhost:6379.
+4. Создадим session-middleware (middleware->sessionMiddleware.ts). Данное middleware, связывает cookie предоставленное пользователем c БД redis. В куки хранится только идентификатор сессии, redis использует этот id как ключ БД, и возвращает аднные пользователя если они есть. Установим пакет session-express и типы к нему (типы dev). Установим пакет connect-redis и типы к нему (типы dev). connect-redis реализует механизм хранения и обновления сессий на клиенте redis.
+5. Изменим файл App.ts. Подключим session-middleware. Добавим в CORS credentials: true, чтобы браузер передавал нам cookie, с запросом от origin.
+6. Теперь чтобы проверить аутентифицирован ли пользователь, нужно получить его сессию. Если сессия существует в БД redis и в сессии записаны данные пользователя, значит пользователь аутентифицирован.
+7. Реализуем middleware, проверяющие аутентифицированн ли пользователь. (middleware->authMiddleware.ts). Добавим соотвествующую ошибку в ApiError. Данное middleware мы будем подключать не глобально (в App.ts), а для конкретных маршрутов (protected routes). В App.ts объявим тип данных пользователя, хранящихся в сессии (UserDto).
+8. Реализуем два защищённых маршрута logout, user-data. 
+9. Изменим методы userController. При регистрации и входе, сессия будет записываться, при выходе уничтожаться.
+10. commit and push
+### Testing
+1. npm run dev
+2. Открываем redis-cli
+3. Выполняем команду ping, получаем ответ PONG.
+4. Выполняем команду keys *, получаем: (empty list or set), БД пустая (по-умолчанию redis может содержать только 1 БД). Если БД не пустая, выполним команду flushall (удаление всех данных из БД).
+5. Теперь БД redis пустая. 
+6. Postman POST /api/auth/user-data, получаем ошибку: Пользователь не авторизован. Под кнопкой send нажимаем cookies. Cookie c нашим именем: sessionId__MD_Express, нет в списке.
+7. Postman POST /api/auth/registration, выполняем регистрацию нового пользователя. `{
+   "login":"first__user",
+   "email":"first__user__mail@mail.ru",
+   "password":"12345",
+   "confirmPassword":"12345"
+   }`
+8. Нажимаем кнопку cookies в Postman. Видим cookie с нашим именем. Cookie содержит id сессии (зашифрован) и дату окончания действия сессии. `sessionId__Mongo__Express=s%3AgVO5EdHjpXsqAwtRd6rVP6aHd_RH8onO.5aeij2QYjknObGVNmgAAewdxZG4C5Jw%2FrwNGUqWyocY; Path=/; HttpOnly; Expires=Fri, 10 Jun 2022 17:55:25 GMT;`
+9. Открываем командную строку redis. Выполняем команду keys *. Получаем: `1) "sess:gVO5EdHjpXsqAwtRd6rVP6aHd_RH8onO"` Это реальные, незашифрованные session id.
+10. Выполним команду get sess:gVO5EdHjpXsqAwtRd6rVP6aHd_RH8onO. Получаем id пользователя, его login и email.
+11. Postman POST /api/auth/user-data. Получаем данные пользователя.
+12. Postman POST /api/auth/logout. В redis опять нет ключей. В postman cookie остался (так как оно (печенье) хранится на клиенте, а не на сервере)
+13. Postman POST /api/auth/user-data, получаем ошибку: Пользователь не авторизован.
+14. Postman POST /api/auth/login. Получаем данные пользователя. Видим что данные cookie обновились (мы получи новую печеньку, взамен старой)
+15. Postman POST /api/auth/user-data. Получаем данные пользователя.
+### Testing CORS
+1. Изменяем origin в cors middleware на: https://learn.javascript.ru
+2. В Chrome открываем консоль браузера со страницы learn.javascript.ru. 
+   Код запроса:
+```javascript
+fetch('http://localhost:5000/api/auth/user-data', {
+  method: 'POST',  
+   credentials: 'include',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({email: "first__user__mail@mail.ru", password: '12345'})
+}).then(res => res.json())
+  .then(res => console.log(res)).catch(err=>console.log(err));
+```
+Получаем: Пользователь не авторизован. В Chrome открываем http://localhost:5000/ на вкладке Application->Storage->Cookies нажимаем на url нашего сайта. Ничего не отображается, значит cookie не найден. 
+3. Меняем url на login. Выполняем запрос. Видим данные пользователя. В Chrome открываем http://localhost:5000/ на вкладке Application->Storage->Cookies нажимаем на url нашего сайта. Хотя открыв вкладку networks на сайте learn.js.ru, видим что куки пришли от сервера, но браузер их не сохранил.
+4. Повторно выполняем запрос user-data. И снова получаем: пользователь не авторизован.
+5. Создадим get маршрут /api. Откроем его в браузере. Заменим origin на config.app.api_url. и выполним предыдущие три запроса.
+   1. /user-data -> Пользователь не авторизован
+   2. /login -> Видим данные пользователя.
+   3. /user-data -> Видим данные пользователя.
+   4. Проверяем cookie, они установлены
+6. Почему в первый раз cookie не были сохранены браузером, а втором слуае были?
+7. Всё дело в атрибуте SameSite (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite). Последние версии браузеров усилили защиту от CSRF атак, и теперь запросы с разных сайтов не сохраняют куки (с learn.js.ru на localhost). При запросе с одного и того же сайта куки сохраняются (с localhost на localhost). Подробнее: https://stackoverflow.com/a/61787597/10000274
+### Testing Jest
+1. Создадим файл __test__/api__auth__session.test.ts и в нём проведём тестирование механизма сессий.
+2. Так как мы не используем memory-server для redis (не нашёл популярной реализации). То стоит очищать redis (flushall) после тестирования.
+
+
+
+
