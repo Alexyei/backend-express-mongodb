@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/App.ts",
   "scripts": {
-    "test": "NODE_ENV=test jest",
+    "test": "NODE_ENV=test jest --forceExit",
     "dev": "nodemon src/App.ts",
     "debug": "nodemon --exec \"node --inspect-brk=0.0.0.0:9229 --require ts-node/register src/app.ts\""
   },

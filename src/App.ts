@@ -13,7 +13,7 @@ const HOST = config.app.host;
 
 declare module 'express-session' {
     interface SessionData {
-        user: UserDto;
+        userID: string;
     }
 }
 

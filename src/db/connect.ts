@@ -2,7 +2,7 @@ import mongoose, {ConnectOptions} from "mongoose";
 import config from "../config/default";
 import {MongoMemoryServer} from "mongodb-memory-server";
 
-let mongod:MongoMemoryServer | null = null;
+let mongod: MongoMemoryServer | null = null;
 
 export async function connectDB() {
     let dbUri = config.db.dbUri;
@@ -17,7 +17,8 @@ export async function connectDB() {
         useUnifiedTopology: true
     } as ConnectOptions)
         .then(() => {
-            console.log("Database connected");
+            if (process.env.NODE_ENV !== 'test')
+                console.log("Database connected");
         })
         .catch((error) => {
             console.error("db error", error);
@@ -25,7 +26,7 @@ export async function connectDB() {
         });
 }
 
-export async function disconnectDB(){
+export async function disconnectDB() {
     try {
         await mongoose.connection.close();
         if (mongod) {

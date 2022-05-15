@@ -11,7 +11,7 @@ beforeAll(() => {
     connectDB();
 });
 
-afterAll(  () => {
+afterAll(  (done) => {
     disconnectDB();
-    // server.close()
+    done();
 });

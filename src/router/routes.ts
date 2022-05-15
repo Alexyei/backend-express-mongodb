@@ -43,6 +43,7 @@ router.post('/auth/login',
     body('password').exists().withMessage("пароль не указан").isLength({min: 5, max: 32}).withMessage("некорректная длина пароля"),
     userController.login);
 router.post('/auth/logout', authMiddleware, userController.logout);
+router.post('/auth/clear', authMiddleware, userController.clearSession);
 router.post('/auth/user-data', authMiddleware, userController.getUserData);
 router.get('/', (req: Request, res:Response, next: NextFunction)=>res.json("Get root!"));
 export default router;

@@ -8,4 +8,8 @@ export default {
     db: {
         dbUri: "mongodb://localhost:27017/messenger-express",
     },
+    session: {
+        // количество сессий доступных одному пользователю, при превышении перезапись старых
+        limitPerUser: 2
+    }
 }
