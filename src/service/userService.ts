@@ -1,4 +1,4 @@
-import UserModel, {UserDocument} from "../models/userModel";
+import {IUserDocument} from "../models/userModel";
 
 import bcrypt from "bcrypt";
 
@@ -12,7 +12,7 @@ class UserService {
     async registration(email:string, login:string, password:string) {
         const hashPassword = await bcrypt.hash(password, 3);
 
-        const user:UserDocument = await createUser({email, login, hashPassword})
+        const user:IUserDocument = await createUser({email, login, hashPassword})
 
 
 

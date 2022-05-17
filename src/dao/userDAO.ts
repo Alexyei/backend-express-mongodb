@@ -1,4 +1,5 @@
-import UserModel, {UserDocument} from "../models/userModel";
+import UserModel from "../models/userModel";
+import mongoose from "mongoose";
 
 interface createUserPropsInterface{
     email: string,
@@ -18,4 +19,7 @@ export async function findUserByLogin(login:string){
    return UserModel.findOne({login});
 }
 
+export async function findUserByID(userID:string){
+    return UserModel.findOne({_id:new mongoose.Types.ObjectId(userID)});
+}
 
