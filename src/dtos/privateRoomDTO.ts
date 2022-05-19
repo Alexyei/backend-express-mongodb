@@ -1,5 +1,4 @@
-
-import {IPrivateRoomWithLeaveUsersDAO} from "../dao/privateRoomDAO";
+import {IPrivateRoomWithLeaveUsersDAO, IPrivateRoomWithMessagesDAO} from "../dao/privateRoomDAO";
 
 interface IPrivateRoomDTO{
     name: string;
@@ -8,6 +7,20 @@ interface IPrivateRoomDTO{
         login: string
     }[],
 }
+
+
+interface IPrivateRoomWithMessagesDTO extends IPrivateRoomDTO{
+    messages: {
+        author: {
+            login: string
+        }
+        message: string,
+        createdAt: string
+    }[]
+
+}
+
+
 
 interface IPrivateRoomWithLeaveUsersDTO extends IPrivateRoomDTO{
     leave_users: {
@@ -32,6 +45,20 @@ export class PrivateRoomDto implements IPrivateRoomDTO{
         this.name = getName(model.users, userLogin);
         this.id = model._id.toString();
         this.users = model.users;
+    }
+}
+
+export class PrivateRoomWithMessagesDTO implements IPrivateRoomWithMessagesDTO{
+    name;
+    users;
+    id;
+    messages;
+
+    constructor(model:IPrivateRoomWithMessagesDAO, userLogin: string) {
+        this.name = getName(model.users, userLogin);
+        this.id = model._id.toString();
+        this.users = model.users;
+        this.messages = model.messages;
     }
 }
 

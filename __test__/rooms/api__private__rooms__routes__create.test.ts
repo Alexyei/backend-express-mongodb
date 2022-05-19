@@ -1,5 +1,5 @@
-import {request} from "./jest.setup";
-import {PrivateRoomWithLeaveUsersDTO} from "../src/dtos/privateRoomDTO";
+import {request} from "../jest.setup";
+import {PrivateRoomWithLeaveUsersDTO, PrivateRoomWithMessagesDTO} from "../../src/dtos/privateRoomDTO";
 
 describe('Маршруты приватных комнат create', () => {
 
@@ -81,9 +81,9 @@ describe('Маршруты приватных комнат create', () => {
 
             const res = await request.post('/api/private-rooms/create').set('Cookie', `${cookie__value};`).send({"login": login})
             expect(res.status).toEqual(200)
-            const room: PrivateRoomWithLeaveUsersDTO = res.body
+            const room: PrivateRoomWithMessagesDTO = res.body
             expect(room.name).toEqual(login)
-            expect(room.leave_users).toEqual([{login: login}])
+            expect(room.messages).toEqual([])
             expect(room.users.length).toEqual(2)
             expect(room.users.filter((u: any) => u.login == user.login).length).toEqual(1)
             expect(room.users.filter((u: any) => u.login == login).length).toEqual(1)
@@ -112,10 +112,10 @@ describe('Маршруты приватных комнат create', () => {
             // const password = "12345";
             const res = await request.post('/api/private-rooms/create').set('Cookie', `${cookie__value};`).send({"login": user.login})
             expect(res.status).toEqual(200)
-            const room: PrivateRoomWithLeaveUsersDTO = res.body
+            const room: PrivateRoomWithMessagesDTO = res.body
             expect(room.name).toEqual(user.login)
             expect(room.users).toEqual([{login: user.login}])
-            expect(room.leave_users).toEqual([])
+            expect(room.messages).toEqual([])
         })
 
         it('Попытка создать комнату с таким же именем (с самим собой)', async () => {
@@ -157,9 +157,9 @@ describe('Маршруты приватных комнат create', () => {
 
             const res = await request.post('/api/private-rooms/create').set('Cookie', `${cookie__value__user3};`).send({"login": login})
             expect(res.status).toEqual(200)
-            const room: PrivateRoomWithLeaveUsersDTO = res.body
+            const room: PrivateRoomWithMessagesDTO = res.body
             expect(room.name).toEqual(login)
-            expect(room.leave_users).toEqual([{login}])
+            expect(room.messages).toEqual([])
             expect(room.users.length).toEqual(2)
             expect(room.users.filter((u: any) => u.login == user3.login).length).toEqual(1)
             expect(room.users.filter((u: any) => u.login == login).length).toEqual(1)
@@ -168,10 +168,10 @@ describe('Маршруты приватных комнат create', () => {
         it('Успешное создание комнаты c самим собой', async () => {
             const res = await request.post('/api/private-rooms/create').set('Cookie', `${cookie__value__user3};`).send({"login": user3.login})
             expect(res.status).toEqual(200)
-            const room: PrivateRoomWithLeaveUsersDTO = res.body
+            const room: PrivateRoomWithMessagesDTO = res.body
             expect(room.name).toEqual(user3.login)
             expect(room.users).toEqual([{login: user3.login}])
-            expect(room.leave_users).toEqual([])
+            expect(room.messages).toEqual([])
         })
 
         it('Попытка получить комнаты первого пользователя', async () => {

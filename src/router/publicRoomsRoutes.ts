@@ -19,9 +19,10 @@ export default function publicRoomsRoutes(router: Router) {
         publicRoomController.create);
 
 
+
     router.post('/public-rooms/join',
         authMiddleware,
-        body('password').isLength({max: 32}).withMessage("Некорректная длина пароля"),
+        body('password').isLength({ max: 32}).withMessage("Некорректная длина пароля"),
         body('name').isLength({min: 5, max: 32}).withMessage("Некорректная длина названия").custom(value => {
             return getPublicRoomByName(value).then(room => {
                 if (room === null) {
@@ -29,7 +30,14 @@ export default function publicRoomsRoutes(router: Router) {
                 }
             });
         }),
-        publicRoomController.join)
+        publicRoomController.join);
+
     router.get('/public-rooms/rooms',
         authMiddleware, publicRoomController.getRooms);
+
+    router.get('/public-room/rooms-messages',
+        authMiddleware, publicRoomController.getRoomsWithMessages);
+
+    router.get('/public-room/room-messages/:id',
+        authMiddleware, publicRoomController.getRoomWithMessages);
 }

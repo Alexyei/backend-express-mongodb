@@ -3,6 +3,7 @@ import mongoose, {model, Schema, Document} from "mongoose";
 
 interface IRoomDocument extends Document{
     users: mongoose.Types.ObjectId[],
+    __type: 'PrivateRoom' | 'PublicRoom' | undefined
 }
 
 const RoomSchema = new Schema({
@@ -29,6 +30,6 @@ const PrivateRoomSchema = new Schema({
     leave_users: [{type: Schema.Types.ObjectId, ref: 'User'}]
 }, { timestamps: true })
 
-const RoomModel = mongoose.model<IRoomDocument>('Room', RoomSchema);
+export const RoomModel = mongoose.model<IRoomDocument>('Room', RoomSchema);
 export const PublicRoomModel = RoomModel.discriminator<IPublicRoomDocument>('PublicRoom',PublicRoomSchema);
 export const PrivateRoomModel = RoomModel.discriminator<IPrivateRoomDocument>('PrivateRoom',PrivateRoomSchema);

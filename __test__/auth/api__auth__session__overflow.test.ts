@@ -1,8 +1,8 @@
-import redisClient from "../src/db/redis";
+import redisClient from "../../src/db/redis";
 
-import {request} from "./jest.setup";
-import {SessionData} from "../src/service/sessionService";
-import config from '../src/config/default'
+import {request} from "../jest.setup";
+import {SessionData} from "../../src/service/sessionService";
+import config from '../../src/config/default'
 
 let cookie__value = "";
 
@@ -38,7 +38,6 @@ describe('Защита Redis от переполнения одним польз
             expect(userData.sessions.length).toEqual(1);
             expect(userData.sessions[0]).toEqual(session);
         });
-
         it('Регистрация второго пользователя', async () => {
             const res = await request.post('/api/auth/registration').send({
                 "login": "user2",
@@ -51,15 +50,12 @@ describe('Защита Redis от переполнения одним польз
             const keys = await redisClient.v4.KEYS('*')
             expect(keys.length).toEqual(4);
         });
-
-
     });
 
     describe('Превышение лимита сессий', () => {
         beforeAll(async () => {
             await redisClient.v4.FLUSHALL()
         })
-
 
         // куки не сохраняются
         it('Заполненяем все свои сессии', async () => {
@@ -99,8 +95,6 @@ describe('Защита Redis от переполнения одним польз
             const userData: SessionData = JSON.parse(await redisClient.v4.GET(sessionData))
             expect(userData.sessions.length).toEqual(config.session.limitPerUser);
         });
-
-
     });
 
     describe('Превышение лимита сессий (два пользователя)', () => {

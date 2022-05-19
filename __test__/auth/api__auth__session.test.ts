@@ -9,7 +9,7 @@
 
 
 
-import {request} from "./jest.setup";
+import {request} from "../jest.setup";
 
 describe('Аутентификация на основе сессий', () => {
     // beforeAll(() => {

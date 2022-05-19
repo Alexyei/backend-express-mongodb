@@ -1,4 +1,5 @@
-import {request} from "./jest.setup";
+import {request} from "../jest.setup";
+import {PublicRoomWithLoginsDTO, PublicRoomWithMessagesDTO} from "../../src/dtos/publicRoomDTO";
 
 describe('Маршруты публичных комнат join', () => {
     let cookie__value__user1 = ""
@@ -63,9 +64,12 @@ describe('Маршруты публичных комнат join', () => {
         it('Успешное создание комнаты без пароля', async ()=>{
 
             const res = await request.post('/api/public-rooms/create').set('Cookie', `${cookie__value__user1};`).send({"name":name})
-            expect(res.body.name).toEqual(name)
-            expect(res.body.owner).toEqual(user1.id)
             expect(res.status).toEqual(200)
+            const data:PublicRoomWithLoginsDTO = res.body;
+            expect(data.name).toEqual(name)
+            expect(data.owner.login).toEqual(user1.login)
+            expect(data.password).toEqual(false)
+            expect(data.users).toEqual([{login:user1.login}])
         })
 
         it('Попытка войти в комнату, уже находясь там', async ()=>{
@@ -78,12 +82,14 @@ describe('Маршруты публичных комнат join', () => {
             const name = "first__room";
             const res = await request.post('/api/public-rooms/join').set('Cookie', `${cookie__value__user2};`).send({"name":name})
             expect(res.status).toEqual(200)
-            expect(res.body.name).toEqual(name)
-            expect(res.body.password).toEqual(false)
-            expect(res.body.owner.login).toEqual(user1.login)
-            expect(res.body.users.length).toEqual(2)
-            expect(res.body.users.filter((u:any)=>u.login == user1.login).length).toEqual(1)
-            expect(res.body.users.filter((u:any)=>u.login == user2.login).length).toEqual(1)
+            const data:PublicRoomWithMessagesDTO = res.body;
+            expect(data.name).toEqual(name)
+            expect(data.password).toEqual(false)
+            expect(data.owner.login).toEqual(user1.login)
+            expect(data.users.length).toEqual(2)
+            expect(data.users.filter((u:any)=>u.login == user1.login).length).toEqual(1)
+            expect(data.users.filter((u:any)=>u.login == user2.login).length).toEqual(1)
+            expect(data.messages).toEqual([])
         })
     })
 
@@ -93,9 +99,12 @@ describe('Маршруты публичных комнат join', () => {
 
         it('Успешное создание комнаты с паролем', async ()=>{
             const res = await request.post('/api/public-rooms/create').set('Cookie', `${cookie__value__user2};`).send({"password":password,"name":name})
-            expect(res.body.name).toEqual(name)
-            expect(res.body.owner).toEqual(user2.id)
             expect(res.status).toEqual(200)
+            const data:PublicRoomWithLoginsDTO = res.body;
+            expect(data.name).toEqual(name)
+            expect(data.owner.login).toEqual(user2.login)
+            expect(data.password).toEqual(true)
+            expect(data.users).toEqual([{login:user2.login}])
         })
 
         it('Попытка войти в комнату, уже находясь там', async ()=>{
@@ -119,12 +128,14 @@ describe('Маршруты публичных комнат join', () => {
         it('Успешная попытка войти в комнату', async ()=>{
             const res = await request.post('/api/public-rooms/join').set('Cookie', `${cookie__value__user1};`).send({"password":password,"name":name})
             expect(res.status).toEqual(200)
-            expect(res.body.name).toEqual(name)
-            expect(res.body.password).toEqual(true)
-            expect(res.body.owner.login).toEqual(user2.login)
-            expect(res.body.users.length).toEqual(2)
-            expect(res.body.users.filter((u:any)=>u.login == user1.login).length).toEqual(1)
-            expect(res.body.users.filter((u:any)=>u.login == user2.login).length).toEqual(1)
+            const data:PublicRoomWithMessagesDTO = res.body;
+            expect(data.name).toEqual(name)
+            expect(data.password).toEqual(true)
+            expect(data.owner.login).toEqual(user2.login)
+            expect(data.users.length).toEqual(2)
+            expect(data.users.filter((u:any)=>u.login == user1.login).length).toEqual(1)
+            expect(data.users.filter((u:any)=>u.login == user2.login).length).toEqual(1)
+            expect(data.messages).toEqual([])
         })
     })
 

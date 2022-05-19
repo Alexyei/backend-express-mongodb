@@ -19,4 +19,13 @@ export default function addPrivateRoomsRouters(router:Router){
     router.get('/private-rooms/rooms',
         authMiddleware,
         authMiddleware,privateRoomController.getRooms);
+
+    router.get('/private-room/rooms-messages',
+        authMiddleware,
+        privateRoomController.getRoomsWithMessages)
+
+
+    router.get('/private-room/room-messages/:id',
+        authMiddleware,
+        privateRoomController.getRoomWithMessages)
 }

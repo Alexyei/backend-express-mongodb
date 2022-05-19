@@ -3,9 +3,12 @@ import ApiError from "../exceptions/ApiError";
 import {
     createPrivateRoom, getOpenedPrivateRoomByID,
     getPrivateRoomByID,
-    getPrivateRoomByUsers, getUserPrivateRoomsWithLeaveUsers, getUserPrivateRoomWithLeaveUsers
+    getPrivateRoomByUsers,
+    getUserPrivateRoomsWithLeaveUsers, getUserPrivateRoomWithLeaveUsers,
+    getUserPrivateRoomsWithMessages, getUserPrivateRoomWithMessages, getUserPrivateRoomByID
 } from "../dao/privateRoomDAO";
-import {PrivateRoomWithLeaveUsersDTO} from "../dtos/privateRoomDTO";
+import {PrivateRoomWithLeaveUsersDTO, PrivateRoomWithMessagesDTO} from "../dtos/privateRoomDTO";
+import {getUserPublicRoomByID} from "../dao/publicRoomDAO";
 
 
 class PrivateRoomService {
@@ -23,10 +26,9 @@ class PrivateRoomService {
             }
         } else {
             await this.createRoom(another_user.id, userID)
-
         }
 
-        return await this.getUserPrivateRoomWithLeaveUsers(another_user.id, userID);
+        return await this.getUserPrivateRoomWithMessages(another_user.id, userID);
     }
 
     async createRoom(anotherUserID: string, userID: string) {
@@ -51,6 +53,71 @@ class PrivateRoomService {
         }
     }
 
+    // async leavePrivateRoom(roomID:string, userID:string) {
+    //     const room = await this.getUserPrivateRoom(roomID, userID)
+    //     if (!room) {
+    //         throw ApiError.BadRequest('Комната не найдена')
+    //     }
+    //
+    //     await this.removeUserFromPrivateRoom(roomID, userID)
+    //
+    //     return await this.getUserPrivateRoomWithLeaveUsers(room.users.filter(id=>id.toString()!=userID)[0].toString(),userID);
+    // }
+
+    // async removeUserFromPrivateRoom(roomID:string,  userID:string){
+    //     const room = await findPrivateRoomByID(roomID)
+    //     if (room!== null)
+    //     {
+    //         room.leave_users.push(new mongoose.Types.ObjectId(userID));
+    //         if (room.users.length == room.leave_users.length){
+    //             // await RoomMessageModel.deleteMany({room: room._id})
+    //             await deletePrivateRoomByID(roomID)
+    //         }else{
+    //             await room.save();
+    //         }
+    //     }
+    //
+    //
+    // }
+
+    async getUserPrivateRoomWithMessagesByID(roomID:string, userID:string){
+        const room = await getPrivateRoomByID(roomID);
+        if (room === null)
+            throw ApiError.BadRequest(`Комната с id ${roomID} не найдена!`);
+
+        const myData = await findUserByID(userID)
+        if (!myData)
+            throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
+
+        if (null === await getUserPrivateRoomByID(roomID, userID)){
+            throw ApiError.BadRequest(`Вы не являетесь участником комнаты!`)
+        }
+
+        const users = room.users.filter(id=>id.toString()!=userID);
+        const another_user_id = users.length == 1 ? users[0].toString() : userID;
+
+        return (await getUserPrivateRoomWithMessages(another_user_id, userID)).map(r => new PrivateRoomWithMessagesDTO(r, myData.login)).shift();
+    }
+
+    async getUserPrivateRoomWithMessages(anotherUserID:string, userID: string){
+        const another_user = await findUserByID(anotherUserID);
+        if (another_user === null)
+            throw ApiError.BadRequest(`Пользователь с id ${anotherUserID} не найден!`);
+
+        const myData = await findUserByID(userID)
+        if (!myData)
+            throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
+
+        return (await getUserPrivateRoomWithMessages(another_user.id, userID)).map(r => new PrivateRoomWithMessagesDTO(r, myData.login)).shift();
+    }
+
+    async getUserPrivateRoomsWithMessages(userID: string) {
+        const userData = await findUserByID(userID)
+        if (!userData)
+            throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
+        return (await getUserPrivateRoomsWithMessages(userID)).map(r=>new PrivateRoomWithMessagesDTO(r, userData.login));
+    }
+
     async getUserPrivateRoomWithLeaveUsers(anotherUserID: string, userID: string) {
         const another_user = await findUserByID(anotherUserID);
         if (another_user === null)
@@ -68,6 +135,10 @@ class PrivateRoomService {
             throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
         return (await getUserPrivateRoomsWithLeaveUsers(userID)).map(r => new PrivateRoomWithLeaveUsersDTO(r, userData.login));
     }
+
+    // async getUserPrivateRoom(anotherUserID:string,userID: string) {
+    //     return await findPrivateRoomByUsers(anotherUserID,userID);
+    // }
 }
 
 export default new PrivateRoomService();

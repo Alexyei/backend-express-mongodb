@@ -1,4 +1,5 @@
-import {request} from "./jest.setup";
+import {request} from "../jest.setup";
+import {PublicRoomWithLoginsDTO} from "../../src/dtos/publicRoomDTO";
 
 describe('Маршруты публичных комнат create', () => {
 
@@ -77,16 +78,19 @@ describe('Маршруты публичных комнат create', () => {
         it('Успешное создание комнаты без пароля', async () => {
             const name = "first__room"
             const res = await request.post('/api/public-rooms/create').set('Cookie', `${cookie__value};`).send({"name": name})
-            expect(res.body.name).toEqual(name)
-            expect(res.body.owner).toEqual(user.id)
+            const data:PublicRoomWithLoginsDTO = res.body;
             expect(res.status).toEqual(200)
+            expect(data.name).toEqual(name)
+            expect(data.owner.login).toEqual(user.login)
+            expect(data.password).toEqual(false)
+            expect(data.users).toEqual([{login:user.login}])
         })
 
         it('Попытка создать комнату с таким же именем', async () => {
             const name = "first__room"
             const res = await request.post('/api/public-rooms/create').set('Cookie', `${cookie__value};`).send({"name": name})
-            expect(res.body.message).toEqual("Такое название группы уже используется")
             expect(res.status).toEqual(400)
+            expect(res.body.message).toEqual("Такое название группы уже используется")
         })
 
         it('Успешное создание комнаты c паролем', async () => {
@@ -96,9 +100,12 @@ describe('Маршруты публичных комнат create', () => {
                 "password": password,
                 "name": name
             })
-            expect(res.body.name).toEqual(name)
-            expect(res.body.owner).toEqual(user.id)
             expect(res.status).toEqual(200)
+            const data:PublicRoomWithLoginsDTO = res.body;
+            expect(data.name).toEqual(name)
+            expect(data.owner.login).toEqual(user.login)
+            expect(data.password).toEqual(true)
+            expect(data.users).toEqual([{login:user.login}])
         })
 
         it('Попытка получить комнаты пользователя', async () => {
@@ -142,9 +149,12 @@ describe('Маршруты публичных комнат create', () => {
         it('Успешное создание комнаты без пароля', async () => {
             const name = "first__user2__room"
             const res = await request.post('/api/public-rooms/create').set('Cookie', `${cookie__value__user2};`).send({"name": name})
-            expect(res.body.name).toEqual(name)
-            expect(res.body.owner).toEqual(user2.id)
             expect(res.status).toEqual(200)
+            const data:PublicRoomWithLoginsDTO = res.body;
+            expect(data.name).toEqual(name)
+            expect(data.owner.login).toEqual(user2.login)
+            expect(data.password).toEqual(false)
+            expect(data.users).toEqual([{login:user2.login}])
         })
 
 
@@ -155,9 +165,12 @@ describe('Маршруты публичных комнат create', () => {
                 "password": password,
                 "name": name
             })
-            expect(res.body.name).toEqual(name)
-            expect(res.body.owner).toEqual(user2.id)
             expect(res.status).toEqual(200)
+            const data:PublicRoomWithLoginsDTO = res.body;
+            expect(data.name).toEqual(name)
+            expect(data.owner.login).toEqual(user2.login)
+            expect(data.password).toEqual(true)
+            expect(data.users).toEqual([{login:user2.login}])
         })
 
         it('Попытка получить комнаты второго пользователя', async () => {

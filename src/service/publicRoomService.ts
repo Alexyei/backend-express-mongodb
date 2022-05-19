@@ -2,10 +2,11 @@ import {
     createPublicRoom,
     getPublicRoomByName,
     getUserPublicRoomsWithUsersLogins,
-    checkUserInPublicRoom, getPublicRoomByNameWithUsersLogins
+    getUserPublicRoom, getPublicRoomByNameWithUsersLogins,
+    getUserPublicRoomWithMessages, getUserPublicRoomsWithMessages, getUserPublicRoomByID
 } from "../dao/publicRoomDAO";
 import {IPublicRoomDocument} from "../models/roomModel";
-import PublicRoomDto from "../dtos/publicRoomDTO";
+import {PublicRoomDTO, PublicRoomWithLoginsDTO, PublicRoomWithMessagesDTO} from "../dtos/publicRoomDTO";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import ApiError from "../exceptions/ApiError";
@@ -18,7 +19,7 @@ class PublicRoomService{
 
         await this.joinUserToRoom(name,userID)
 
-        const roomDto = new PublicRoomDto(room);
+        const roomDto = new PublicRoomDTO(room);
 
         return roomDto;
     }
@@ -32,7 +33,7 @@ class PublicRoomService{
         if (!isPassEquals) {
             throw ApiError.BadRequest('Неверное название комнаты или пароль');
         }
-        if (null !== await checkUserInPublicRoom(name, userID)){
+        if (null !== await getUserPublicRoom(name, userID)){
             throw ApiError.BadRequest('Вы уже вступили в эту комнату');
         }
         await this.joinUserToRoom(name,userID)
@@ -49,8 +50,32 @@ class PublicRoomService{
         return result.save();
     }
 
-    async getUserRooms(userID: string) {
-        return await getUserPublicRoomsWithUsersLogins(userID);
+    async getUserRoomsWithLogins(userID: string) {
+        return (await getUserPublicRoomsWithUsersLogins(userID)).map(r=>new PublicRoomWithLoginsDTO(r));
+    }
+
+    async getRoomByNameWithLogins(name: string) {
+        return new PublicRoomWithLoginsDTO((await getPublicRoomByNameWithUsersLogins(name))[0]);
+    }
+
+    async getUserPublicRoomWithMessages(roomID:string, userID:string) {
+        // const myData = await findUserByID(userID)
+        // if (!myData)
+        //     throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
+        if (null === await getUserPublicRoomByID(roomID, userID)){
+            throw ApiError.BadRequest(`Вы не являетесь участником комнаты c id ${roomID}!`)
+        }
+
+        return new PublicRoomWithMessagesDTO((await getUserPublicRoomWithMessages(roomID,userID))[0]);
+    }
+
+    async getUserPublicRoomsWithMessages(userID:string) {
+        // const myData = await findUserByID(userID)
+        // if (!myData)
+        //     throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
+
+
+        return (await getUserPublicRoomsWithMessages(userID)).map(r=>new PublicRoomWithMessagesDTO(r));
     }
 }
 
