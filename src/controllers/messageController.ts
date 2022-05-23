@@ -11,10 +11,26 @@ class MessageController{
             const errors = validationResult(req);
 
             if (!errors.isEmpty()) {
-                return next(ApiError.BadRequest('Ошибка при валидации', errors.array()))
+                return next(ApiError.BadRequest(errors.array()[0].msg, errors.array()))
             }
             const {roomID, message } = req.body;
             const messageData = await messageService.create(roomID, req.session.userID as string, message);
+
+            return res.json(messageData);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async lazy(req: Request, res:Response, next: NextFunction) {
+        try {
+            const errors = validationResult(req);
+
+            if (!errors.isEmpty()) {
+                return next(ApiError.BadRequest(errors.array()[0].msg, errors.array()))
+            }
+            const {roomID, limit, from, nin } = req.body;
+            const messageData = await messageService.lazy(roomID, req.session.userID as string,limit, from, nin);
 
             return res.json(messageData);
         } catch (error) {

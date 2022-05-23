@@ -78,7 +78,7 @@ describe('Отправка сообщений в приватной комнат
                 message: 'Текст сообщения'
             })
             expect(res.status).toEqual(400)
-            expect(res.body.message).toEqual(`Комнаты с id ${roomID} не существует!`)
+            expect(res.body.message).toEqual(`Комната с таким roomID не найдена`)
         });
     })
 

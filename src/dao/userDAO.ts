@@ -7,8 +7,8 @@ interface createUserPropsInterface{
     hashPassword: string,
 }
 
-export async function createUser({email, login,  hashPassword}:createUserPropsInterface){
-   return await UserModel.create({email, login, password: hashPassword});
+export async function createUser(props:createUserPropsInterface){
+   return await UserModel.create({email: props.email, login: props.login, password: props.hashPassword});
 }
 
 export async function findUserByEmail(email:string){

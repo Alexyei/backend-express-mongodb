@@ -10,9 +10,9 @@ function createRouter() {
     authRoutes(router);
     publicRoomsRoutes(router);
     privateRoomsRoutes(router);
-    if (process.env.NODE_ENV === 'test') {
+
         messagesRoutes(router)
-    }
+
 }
 
 createRouter();

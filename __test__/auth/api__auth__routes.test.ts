@@ -6,7 +6,7 @@ describe('Маршруты авторизации', () => {
     describe('POST /api/auth/login', () => {
         it('Предоставлены некорректные данные для входа', async () => {
             const res = await request.post('/api/auth/login').send({a:123})
-            expect(res.body.message).toEqual("Ошибка при валидации")
+            expect(res.body.message).toEqual("Email не указан")
             expect(res.status).toEqual(400);
         });
     });
@@ -21,14 +21,14 @@ describe('Маршруты авторизации', () => {
     describe('POST /api/auth/registration', () => {
         it('Регистрация пользователя с таким же логином', async () => {
             const res = await request.post('/api/auth/registration').send({"login":" user1", "email":"mail1@mail.ru", "password":"12345","confirmPassword":"12345"})
-            expect(res.body.message).toEqual("Ошибка при валидации")
+            expect(res.body.message).toEqual("Такой login уже используется")
             expect(res.status).toEqual(400);
         });
     });
     describe('POST /api/auth/registration', () => {
         it('Регистрация пользователя с таким же email', async () => {
             const res = await request.post('/api/auth/registration').send({"login":" user2", "email":"mail@mail.ru", "password":"12345","confirmPassword":"12345"})
-            expect(res.body.message).toEqual("Ошибка при валидации")
+            expect(res.body.message).toEqual("Такой E-mail уже используется")
             expect(res.status).toEqual(400);
         });
     });
