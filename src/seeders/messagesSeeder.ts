@@ -8,6 +8,7 @@ class messagesSeeder {
     async createMessagesInPublicRoomsByUserIDs(count: number, usersIDs: string[]) {
         const inserted = [];
         for (const userID of usersIDs) {
+
             const userRooms = await publicRoomService.getUserRoomsWithLogins(userID)
             for (const room of userRooms) {
                 for (let i = 0; i < count; ++i) {
@@ -15,6 +16,7 @@ class messagesSeeder {
                     inserted.push(message)
                 }
             }
+
         }
 
         return inserted;

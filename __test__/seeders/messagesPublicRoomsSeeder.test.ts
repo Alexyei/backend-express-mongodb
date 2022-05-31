@@ -10,13 +10,13 @@ import MessageDTO from "../../src/dtos/messageDTO";
 jest.setTimeout(30000);
 describe('Сеятель сообщений в публичных комнатах', () => {
     let users: UserDto[];
-    const countUsers = 10;
+    const countUsers = 5;
 
     let rooms: PublicRoomDTO[];
-    const countRoomsByUser = 20;
+    const countRoomsByUser = 10;
 
     let messages: MessageDTO[];
-    const countMessageByUserByRoom = 10;
+    const countMessageByUserByRoom = 5;
     describe('Создание пользователей', () => {
         it(`Создадим ${countUsers} пользователей`, async () => {
             let insertedSuccess = false;

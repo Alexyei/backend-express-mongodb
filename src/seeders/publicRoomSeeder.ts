@@ -13,9 +13,10 @@ class publicRoomSeeder {
                 const currentUser = usersIDs[i];
                 const name = faker.unique(faker.company.companyName)
                 const room = await publicRoomService.create(name, password, currentUser)
-                inserted.push(room)
+
 
                 const joinUsers = shuffle(usersIDs.filter(id => id != currentUser)).slice(0, randomInteger(0, usersIDs.length - 1))
+                inserted.push({...room,users:[currentUser,...joinUsers]})
                 for (const id of joinUsers) {
                     await publicRoomService.join(name, password, id);
                 }

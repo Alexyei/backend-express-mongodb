@@ -143,7 +143,7 @@ describe('Отправка сообщений в публичных комнат
         it('Отправляем запрос без параметров',async ()=>{
             const res = await request.post(`/api/messages/lazy`).set('Cookie', `${cookie__value__user2};`).send();
             expect(res.status).toEqual(400)
-            expect(res.body.message).toEqual(`Максимальное количнство сообщений ${500}, минимальное ${1}`)
+            expect(res.body.message).toEqual(`Максимальное количество сообщений ${500}, минимальное ${1}`)
         })
         it('Отправляем запрос без limit',async ()=>{
             const res = await request.post(`/api/messages/lazy`).set('Cookie', `${cookie__value__user2};`).send({
@@ -152,7 +152,7 @@ describe('Отправка сообщений в публичных комнат
                 nin
             });
             expect(res.status).toEqual(400)
-            expect(res.body.message).toEqual(`Максимальное количнство сообщений ${500}, минимальное ${1}`)
+            expect(res.body.message).toEqual(`Максимальное количество сообщений ${500}, минимальное ${1}`)
         })
         it('Отправляем запрос без from',async ()=>{
             const res = await request.post(`/api/messages/lazy`).set('Cookie', `${cookie__value__user2};`).send({
@@ -180,7 +180,7 @@ describe('Отправка сообщений в публичных комнат
                 limit: -1
             });
             expect(res.status).toEqual(400)
-            expect(res.body.message).toEqual(`Максимальное количнство сообщений ${500}, минимальное ${1}`)
+            expect(res.body.message).toEqual(`Максимальное количество сообщений ${500}, минимальное ${1}`)
         })
         it('Отправляем запрос некорректным limit (max)',async ()=>{
             const res = await request.post(`/api/messages/lazy`).set('Cookie', `${cookie__value__user2};`).send({
@@ -190,7 +190,7 @@ describe('Отправка сообщений в публичных комнат
                 limit: 501
             });
             expect(res.status).toEqual(400)
-            expect(res.body.message).toEqual(`Максимальное количнство сообщений ${500}, минимальное ${1}`)
+            expect(res.body.message).toEqual(`Максимальное количество сообщений ${500}, минимальное ${1}`)
         })
         it('Отправляем запрос с некорректной длиной from',async ()=>{
             const res = await request.post(`/api/messages/lazy`).set('Cookie', `${cookie__value__user2};`).send({

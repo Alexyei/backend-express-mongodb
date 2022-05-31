@@ -1,4 +1,8 @@
-import {IPrivateRoomWithLeaveUsersDAO, IPrivateRoomWithMessagesDAO} from "../dao/privateRoomDAO";
+import {
+    IPrivateRoomWithLeaveUsersDAO,
+    IPrivateRoomWithMessagesDAO,
+    IPrivateRoomWithMessagesLazyDA0
+} from "../dao/privateRoomDAO";
 
 interface IPrivateRoomDTO{
     name: string;
@@ -11,6 +15,7 @@ interface IPrivateRoomDTO{
 
 interface IPrivateRoomWithMessagesDTO extends IPrivateRoomDTO{
     messages: {
+        id: string
         author: {
             login: string
         }
@@ -20,6 +25,9 @@ interface IPrivateRoomWithMessagesDTO extends IPrivateRoomDTO{
 
 }
 
+interface IPrivateRoomWithMessagesLazyDTO extends IPrivateRoomWithMessagesDTO{
+    lastMessage:string
+}
 
 
 interface IPrivateRoomWithLeaveUsersDTO extends IPrivateRoomDTO{
@@ -48,19 +56,7 @@ export class PrivateRoomDto implements IPrivateRoomDTO{
     }
 }
 
-export class PrivateRoomWithMessagesDTO implements IPrivateRoomWithMessagesDTO{
-    name;
-    users;
-    id;
-    messages;
 
-    constructor(model:IPrivateRoomWithMessagesDAO, userLogin: string) {
-        this.name = getName(model.users, userLogin);
-        this.id = model._id.toString();
-        this.users = model.users;
-        this.messages = model.messages;
-    }
-}
 
 export class PrivateRoomWithLeaveUsersDTO implements IPrivateRoomWithLeaveUsersDTO{
     name;
@@ -73,5 +69,35 @@ export class PrivateRoomWithLeaveUsersDTO implements IPrivateRoomWithLeaveUsersD
         this.id = model._id.toString();
         this.users = model.users;
         this.leave_users = model.leave_users;
+    }
+}
+
+export class PrivateRoomWithMessagesDTO implements IPrivateRoomWithMessagesDTO{
+    name;
+    users;
+    id;
+    messages;
+
+    constructor(model:IPrivateRoomWithMessagesDAO, userLogin: string) {
+        this.name = getName(model.users, userLogin);
+        this.id = model._id.toString();
+        this.users = model.users;
+        this.messages = model.messages.map(m=>({...m,id:m._id.toString()}));
+    }
+}
+
+export class PrivateRoomWithMessagesLazyDTO implements IPrivateRoomWithMessagesLazyDTO{
+    name;
+    users;
+    id;
+    messages;
+    lastMessage;
+
+    constructor(model:IPrivateRoomWithMessagesLazyDA0, userLogin: string) {
+        this.name = getName(model.users, userLogin);
+        this.id = model._id.toString();
+        this.users = model.users;
+        this.messages = model.messages.map(m=>({...m,id:m._id.toString()}));
+        this.lastMessage = model.lastMessage.toISOString();
     }
 }

@@ -1,14 +1,22 @@
 import {findUserByID, findUserByLogin} from "../dao/userDAO";
 import ApiError from "../exceptions/ApiError";
 import {
-    createPrivateRoom, getOpenedPrivateRoomByID,
+    createPrivateRoom,
+    getOpenedPrivateRoomByID,
     getPrivateRoomByID,
     getPrivateRoomByUsers,
-    getUserPrivateRoomsWithLeaveUsers, getUserPrivateRoomWithLeaveUsers,
-    getUserPrivateRoomsWithMessages, getUserPrivateRoomWithMessages, getUserPrivateRoomByID
+    getUserPrivateRoomsWithLeaveUsers,
+    getUserPrivateRoomWithLeaveUsers,
+    getUserPrivateRoomsWithMessages,
+    getUserPrivateRoomWithMessages,
+    getUserPrivateRoomByID,
+    getUserPrivateRoomsWithLastMessagesLazy, getUserPrivateRoomWithLastMessages
 } from "../dao/privateRoomDAO";
-import {PrivateRoomWithLeaveUsersDTO, PrivateRoomWithMessagesDTO} from "../dtos/privateRoomDTO";
-import {getUserPublicRoomByID} from "../dao/publicRoomDAO";
+import {
+    PrivateRoomWithLeaveUsersDTO,
+    PrivateRoomWithMessagesDTO,
+    PrivateRoomWithMessagesLazyDTO
+} from "../dtos/privateRoomDTO";
 
 
 class PrivateRoomService {
@@ -111,11 +119,34 @@ class PrivateRoomService {
         return (await getUserPrivateRoomWithMessages(another_user.id, userID)).map(r => new PrivateRoomWithMessagesDTO(r, myData.login)).shift();
     }
 
+    async getUserPrivateRoomWithMessagesLazy(anotherUserID:string, userID:string, messagesLimit:number) {
+        const another_user = await findUserByID(anotherUserID);
+        if (another_user === null)
+            throw ApiError.BadRequest(`Пользователь с id ${anotherUserID} не найден!`);
+
+        const myData = await findUserByID(userID)
+        if (!myData)
+            throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
+
+
+        return (await getUserPrivateRoomWithLastMessages(anotherUserID,userID, messagesLimit)).map(r => new PrivateRoomWithMessagesLazyDTO(r, myData.login)).shift();
+    }
+
+
     async getUserPrivateRoomsWithMessages(userID: string) {
         const userData = await findUserByID(userID)
         if (!userData)
             throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
         return (await getUserPrivateRoomsWithMessages(userID)).map(r=>new PrivateRoomWithMessagesDTO(r, userData.login));
+    }
+
+
+    async getUserPrivateRoomsWithMessagesLazy(userID:string,roomsLimit:number, messagesLimit:number, from:string, nin:string[]) {
+        const userData = await findUserByID(userID)
+        if (!userData)
+            throw ApiError.BadRequest(`Пользователь c id ${userID} не найден!`)
+        const data = await getUserPrivateRoomsWithLastMessagesLazy(userID,roomsLimit,messagesLimit,new Date(from),nin)
+        return data.map(r=>new PrivateRoomWithMessagesLazyDTO(r, userData.login));
     }
 
     async getUserPrivateRoomWithLeaveUsers(anotherUserID: string, userID: string) {

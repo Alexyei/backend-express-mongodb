@@ -82,6 +82,38 @@ class PublicRoomController {
         }
     }
 
+    async getRoomsWithMessagesLazy(req: Request, res:Response, next: NextFunction) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return next(ApiError.BadRequest(errors.array()[0].msg, errors.array()))
+            }
+            const {messagesLimit, roomsLimit, from, nin} = req.body;
+
+            const room = await publicRoomService.getUserPublicRoomsWithMessagesLazy(req.session.userID as string, roomsLimit, messagesLimit,from,nin);
+
+            return res.json(room);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+
+    async getRoomWithMessagesLazy(req: Request, res:Response, next: NextFunction) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return next(ApiError.BadRequest(errors.array()[0].msg, errors.array()))
+            }
+            const {roomID, messagesLimit} = req.body;
+
+            const room = await publicRoomService.getUserPublicRoomWithMessagesLazy(roomID, req.session.userID as string, messagesLimit);
+
+            return res.json(room);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 

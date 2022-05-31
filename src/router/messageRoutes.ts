@@ -28,7 +28,7 @@ export default function addMessageRouters(router:Router){
         body('limit').custom(value=>{
             const n = Number(value)
             return !(isNaN(n) || n < 1 || n > 500);
-        }).withMessage(`Максимальное количнство сообщений ${500}, минимальное ${1}`),
+        }).withMessage(`Максимальное количество сообщений ${500}, минимальное ${1}`),
         body('roomID').exists({checkNull:true}).withMessage(`roomID обязателен`).isLength({min: 24,max:24}).withMessage('Длина идентификатора 24 символа').custom(value => {
             return getRoomByID(value).then(user => {
                 if (user === null) {

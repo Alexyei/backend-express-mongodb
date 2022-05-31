@@ -2,11 +2,22 @@ import {
     createPublicRoom,
     getPublicRoomByName,
     getUserPublicRoomsWithUsersLogins,
-    getUserPublicRoom, getPublicRoomByNameWithUsersLogins,
-    getUserPublicRoomWithMessages, getUserPublicRoomsWithMessages, getUserPublicRoomByID
+    getUserPublicRoom,
+    getPublicRoomByNameWithUsersLogins,
+    getUserPublicRoomWithMessages,
+    getUserPublicRoomsWithMessages,
+    getUserPublicRoomByID,
+    getUserPublicRoomByIDWithLastMessages,
+    getUserPublicRoomsWithLastMessagesLazy, getUserPublicRoomsWithLastMessagesLazyALL
 } from "../dao/publicRoomDAO";
 import {IPublicRoomDocument} from "../models/roomModel";
-import {PublicRoomDTO, PublicRoomWithLoginsDTO, PublicRoomWithMessagesDTO} from "../dtos/publicRoomDTO";
+import {
+    PublicRoomDTO,
+    PublicRoomWithLoginsDTO,
+    PublicRoomWithMessagesDTO,
+    PublicRoomWithMessagesDTOLazy,
+
+} from "../dtos/publicRoomDTO";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import ApiError from "../exceptions/ApiError";
@@ -76,6 +87,22 @@ class PublicRoomService{
 
 
         return (await getUserPublicRoomsWithMessages(userID)).map(r=>new PublicRoomWithMessagesDTO(r));
+    }
+
+    async getUserPublicRoomWithMessagesLazy(roomID:string, userID:string, messagesLimit:number) {
+        if (null === await getUserPublicRoomByID(roomID, userID)){
+            throw ApiError.BadRequest(`Вы не являетесь участником комнаты c id ${roomID}!`)
+        }
+
+        return new PublicRoomWithMessagesDTO((await getUserPublicRoomByIDWithLastMessages(roomID,userID, messagesLimit))[0]);
+    }
+
+    async getUserPublicRoomsWithMessagesLazy(userID:string,roomsLimit:number, messagesLimit:number, from:string, nin:string[]) {
+        const data = await getUserPublicRoomsWithLastMessagesLazy(userID,roomsLimit,messagesLimit,new Date(from),nin)
+        // const data1 = await getUserPublicRoomsWithLastMessagesLazyALL(userID,roomsLimit,messageLimit,new Date(from),nin)
+        // const a = data.map(d=>(d.lastMessage as any).toISOString());
+        // const b = data1.map(d=>(d.lastMessage as any).toISOString());
+        return data.map(r=>new PublicRoomWithMessagesDTOLazy(r));
     }
 }
 

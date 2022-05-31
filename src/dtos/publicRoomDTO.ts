@@ -1,6 +1,6 @@
 //DTO - data transfer object
 import {IPublicRoomDocument} from "../models/roomModel";
-import {IPublicRoomDAO, IPublicRoomWithMessagesDAO} from "../dao/publicRoomDAO";
+import {IPublicRoomDAO, IPublicRoomWithMessagesDAO, IPublicRoomWithMessagesDAOLazy} from "../dao/publicRoomDAO";
 
 export interface IPublicRoomDTO{
     name: string;
@@ -22,6 +22,7 @@ export interface IPublicRoomWithLoginsDTO{
 
 export interface IPublicRoomWithMessagesDTO extends IPublicRoomWithLoginsDTO{
     messages: {
+        id: string
         author: {
             login: string
         }
@@ -29,6 +30,11 @@ export interface IPublicRoomWithMessagesDTO extends IPublicRoomWithLoginsDTO{
         createdAt: string
     }[]
 }
+
+export interface IPublicRoomWithMessagesDTOLazy extends IPublicRoomWithMessagesDTO{
+    lastMessage: string
+}
+
 export class PublicRoomDTO implements IPublicRoomDTO{
     name;
     owner;
@@ -70,9 +76,27 @@ export class PublicRoomWithMessagesDTO implements IPublicRoomWithMessagesDTO{
         this.password = model.password;
         this.owner = model.owner;
         this.users = model.users;
-        this.messages = model.messages;
+        this.messages = model.messages.map(m=>({...m,id:m._id.toString()}));
         this.id = model._id.toString()
     }
 }
 
+export class PublicRoomWithMessagesDTOLazy implements IPublicRoomWithMessagesDTOLazy{
+    id;
+    name;
+    owner;
+    password;
+    users;
+    messages;
+    lastMessage;
 
+    constructor(model:IPublicRoomWithMessagesDAOLazy) {
+        this.name = model.name;
+        this.password = model.password;
+        this.owner = model.owner;
+        this.users = model.users;
+        this.messages = model.messages.map(m=>({...m,id:m._id.toString()}));
+        this.id = model._id.toString()
+        this.lastMessage = model.lastMessage;
+    }
+}

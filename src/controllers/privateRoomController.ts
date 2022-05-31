@@ -2,6 +2,7 @@ import ApiError from "../exceptions/ApiError";
 import {NextFunction, Request, Response} from "express";
 import {validationResult} from "express-validator";
 import privateRoomService from "../service/privateRoomService";
+import publicRoomService from "../service/publicRoomService";
 
 
 class PrivateRoomController {
@@ -58,6 +59,39 @@ class PrivateRoomController {
         }
     }
 
+
+    async getRoomsWithMessagesLazy(req: Request, res:Response, next: NextFunction) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return next(ApiError.BadRequest(errors.array()[0].msg, errors.array()))
+            }
+            const {messagesLimit, roomsLimit, from, nin} = req.body;
+
+            const room = await privateRoomService.getUserPrivateRoomsWithMessagesLazy(req.session.userID as string, roomsLimit, messagesLimit,from,nin);
+
+            return res.json(room);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+
+    async getRoomWithMessagesLazy(req: Request, res:Response, next: NextFunction) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return next(ApiError.BadRequest(errors.array()[0].msg, errors.array()))
+            }
+            const {anotherUserID, messagesLimit} = req.body;
+
+            const room = await privateRoomService.getUserPrivateRoomWithMessagesLazy(anotherUserID, req.session.userID as string, messagesLimit);
+
+            return res.json(room);
+        } catch (e) {
+            next(e);
+        }
+    }
 
 }
 
