@@ -21,12 +21,18 @@ import {
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import ApiError from "../exceptions/ApiError";
-
+import config from '../config/default'
+import UserLimitsService from './userLimitsService'
 class PublicRoomService{
     async create(name:string, password:string, userID:string) {
+        if (!(await UserLimitsService.checkUserLimit(userID,"publicRoomCreateInDay")))
+            throw ApiError.BadRequest('Достигнут дневной лимит создания публичных комнат')
+
         const hashPassword = password ? await bcrypt.hash(password, 3) : null;
 
         const room:IPublicRoomDocument = await createPublicRoom({name, hashPassword, userID})
+
+        await UserLimitsService.reduceUserLimit(userID,{publicRoomCreateInDay:1})
 
         await this.joinUserToRoom(name,userID)
 
@@ -47,7 +53,16 @@ class PublicRoomService{
         if (null !== await getUserPublicRoom(name, userID)){
             throw ApiError.BadRequest('Вы уже вступили в эту комнату');
         }
+
+        if (room.users.length >= config.userLimits.publicRoom.maxUsersCount)
+            throw ApiError.BadRequest(`Количество участник комнаты не может быть больше ${config.userLimits.publicRoom.maxUsersCount}`)
+
+        if (!(await UserLimitsService.checkUserLimit(userID,"publicRoomJoinInDay")))
+            throw ApiError.BadRequest('Достигнут дневной лимит вступления в публичные комнаты')
+
         await this.joinUserToRoom(name,userID)
+
+        await UserLimitsService.reduceUserLimit(userID,{publicRoomJoinInDay:1})
 
         return (await getPublicRoomByNameWithUsersLogins(room.name))[0];
     }
@@ -57,6 +72,7 @@ class PublicRoomService{
         const result = await getPublicRoomByName(name)
         if (!result)
             throw ApiError.BadRequest(`Комната с именем ${name} не найдена`);
+
         result.users.push(new mongoose.Types.ObjectId(userID))
         return result.save();
     }

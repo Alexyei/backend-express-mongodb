@@ -1,4 +1,5 @@
 import privateRoomService from "../service/privateRoomService";
+import userSeeder from "./userSeeder";
 
 class privateRoomSeeder {
     async insertPrivateRoomsByUserIDs(usersIDs: string[]) {
@@ -10,6 +11,17 @@ class privateRoomSeeder {
                 const room = await privateRoomService.createRoom(anotherUser, currentUser)
                 inserted.push(room)
             }
+        }
+        return inserted;
+    }
+
+    async insertPrivateRoomsByUserID(userID: string,roomsCount: number) {
+        const inserted = [];
+        const users = await userSeeder.insertUsers(roomsCount);
+        for (let i = 0; i < users.length; ++i) {
+            const currentUser = users[i];
+            const room = await privateRoomService.createOrOpen(currentUser.login, userID)
+            inserted.push(room)
         }
         return inserted;
     }

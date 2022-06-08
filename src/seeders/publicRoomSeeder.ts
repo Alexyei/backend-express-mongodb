@@ -11,7 +11,7 @@ class publicRoomSeeder {
         for (let i = 0; i < usersIDs.length; ++i) {
             for (let j = 0; j < countByUser; ++j) {
                 const currentUser = usersIDs[i];
-                const name = faker.unique(faker.company.companyName)
+                const name = faker.unique(faker.company.companyName).slice(0,32)
                 const room = await publicRoomService.create(name, password, currentUser)
 
 

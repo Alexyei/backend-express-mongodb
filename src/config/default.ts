@@ -21,13 +21,18 @@ export default {
         messages:{
             //максимальная длина сообщений
             maxLength: 2000,
-
+            publicMessagesInDay: 500,
+            privateMessagesInDay: 500
         },
         publicRoom:{
             //максимальное количество пользователей в комнате
-            maxUsersCount: 500
+            maxUsersCount: 500,
+            publicRoomCreateInDay: 5,
+            publicRoomJoinInDay: 50
         },
-
+        privateRoom:{
+            privateRoomCreateInDay: 50
+        }
 
     }
 }

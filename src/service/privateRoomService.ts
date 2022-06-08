@@ -17,6 +17,7 @@ import {
     PrivateRoomWithMessagesDTO,
     PrivateRoomWithMessagesLazyDTO
 } from "../dtos/privateRoomDTO";
+import UserLimitsService from "./userLimitsService";
 
 
 class PrivateRoomService {
@@ -33,7 +34,12 @@ class PrivateRoomService {
                 await this.openPrivateRoom(privateRoomData.id)
             }
         } else {
+            if (!(await UserLimitsService.checkUserLimit(userID,"privateRoomCreateInDay")))
+                throw ApiError.BadRequest('Достигнут дневной лимит создания приватных комнат')
+
             await this.createRoom(another_user.id, userID)
+
+            await UserLimitsService.reduceUserLimit(userID,{privateRoomCreateInDay:1})
         }
 
         return await this.getUserPrivateRoomWithMessages(another_user.id, userID);

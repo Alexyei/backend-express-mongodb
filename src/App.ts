@@ -6,6 +6,7 @@ import cors from 'cors'
 import router from "./router/routes";
 import UserDto from "./dtos/userDTO";
 import sessionMiddleware from "./middlewares/sessionMiddleware";
+import cronStart from "./cron/cronStart";
 
 
 const PORT = config.app.port;
@@ -37,6 +38,7 @@ function startListening(app: Express){
 
 if (process.env.NODE_ENV !== 'test')
     connectDB().then(() => {
+        cronStart();
             startListening(app)
         }
     )
