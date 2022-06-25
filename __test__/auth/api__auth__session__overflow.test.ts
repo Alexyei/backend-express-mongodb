@@ -5,6 +5,30 @@ import {SessionData} from "../../src/service/sessionService";
 import config from '../../src/config/default'
 
 let cookie__value = "";
+const firstUserRegistrationPayload = {
+    "login": "user1",
+    "email": "mail1@mail.ru",
+    "password": "12345",
+    "confirmPassword": "12345"
+}
+
+const firstUserLoginPayload = {
+    login: firstUserRegistrationPayload.login,
+    email: firstUserRegistrationPayload.email
+}
+
+const secondUserRegistrationPayload = {
+    "login": "user2",
+    "email": "mail2@mail.ru",
+    "password": "12345",
+    "confirmPassword": "12345"
+}
+
+const secondUserLoginPayload = {
+    login: secondUserRegistrationPayload.login,
+    email: secondUserRegistrationPayload.email
+}
+
 
 describe('Защита Redis от переполнения одним пользователем', () => {
 
@@ -16,39 +40,30 @@ describe('Защита Redis от переполнения одним польз
         beforeAll(async () => {
             await redisClient.v4.FLUSHALL()
         })
-
-        it('Регистрация первого пользователя', async () => {
-            const res = await request.post('/api/auth/registration').send({
-                "login": "user1",
-                "email": "mail1@mail.ru",
-                "password": "12345",
-                "confirmPassword": "12345"
-            })
-            expect(res.status).toEqual(200);
+        describe('Успешно регистрируем первого пользователя', () => {
+            it('Должен вернуть код 200 и записать два ключа в redis', async () => {
+                const res = await request.post('/api/auth/registration').send(firstUserRegistrationPayload)
+                expect(res.status).toEqual(200);
 
 
-            const keys = await redisClient.v4.KEYS('*')
-            expect(keys.length).toEqual(2);
-
-
-            const session = keys.filter((key: string) => !key.startsWith("sess_data"))[0]
-            const sessionData = keys.filter((key: string) => key.startsWith("sess_data"))[0]
-            expect(sessionData).not.toBeUndefined()
-            const userData: SessionData = JSON.parse(await redisClient.v4.GET(sessionData))
-            expect(userData.sessions.length).toEqual(1);
-            expect(userData.sessions[0]).toEqual(session);
+                const keys = await redisClient.v4.KEYS('*')
+                expect(keys.length).toEqual(2);
+                const session = keys.filter((key: string) => !key.startsWith("sess_data"))[0]
+                const sessionData = keys.filter((key: string) => key.startsWith("sess_data"))[0]
+                expect(sessionData).not.toBeUndefined()
+                const userData: SessionData = JSON.parse(await redisClient.v4.GET(sessionData))
+                expect(userData.sessions.length).toEqual(1);
+                expect(userData.sessions[0]).toEqual(session);
+            });
         });
-        it('Регистрация второго пользователя', async () => {
-            const res = await request.post('/api/auth/registration').send({
-                "login": "user2",
-                "email": "mail2@mail.ru",
-                "password": "12345",
-                "confirmPassword": "12345"
-            })
-            expect(res.status).toEqual(200);
+        describe('Успешно регистрируем второго пользователя', () => {
+            it('Должен вернуть код 200 и записать ещё два ключа в redis', async () => {
+                const res = await request.post('/api/auth/registration').send(secondUserRegistrationPayload)
+                expect(res.status).toEqual(200);
 
-            const keys = await redisClient.v4.KEYS('*')
-            expect(keys.length).toEqual(4);
+                const keys = await redisClient.v4.KEYS('*')
+                expect(keys.length).toEqual(4);
+            });
         });
     });
 
@@ -58,26 +73,22 @@ describe('Защита Redis от переполнения одним польз
         })
 
         // куки не сохраняются
-        it('Заполненяем все свои сессии', async () => {
-            for (let i = 0; i < config.session.limitPerUser; ++i) {
-                const res = await request.post('/api/auth/login').send({
-                    "email": "mail1@mail.ru",
-                    "password": "12345",
-                })
-                expect(res.status).toEqual(200);
+        describe('Заполненяем все свои сессии',()=> {
+            it('Должен возвращить код 200 и добавлять ключи в redis', async () => {
+                for (let i = 0; i < config.session.limitPerUser; ++i) {
+                    const res = await request.post('/api/auth/login').send(firstUserLoginPayload)
+                    expect(res.status).toEqual(200);
 
 
-                const keys = await redisClient.v4.KEYS('*')
-                expect(keys.length).toEqual(i + 2);
-
-
-                const sessionData = keys.filter((key: string) => key.startsWith("sess_data"))[0]
-                expect(sessionData).not.toBeUndefined()
-                const userData: SessionData = JSON.parse(await redisClient.v4.GET(sessionData))
-                expect(userData.sessions.length).toEqual(i + 1);
-            }
+                    const keys = await redisClient.v4.KEYS('*')
+                    expect(keys.length).toEqual(i + 2);
+                    const sessionData = keys.filter((key: string) => key.startsWith("sess_data"))[0]
+                    expect(sessionData).not.toBeUndefined()
+                    const userData: SessionData = JSON.parse(await redisClient.v4.GET(sessionData))
+                    expect(userData.sessions.length).toEqual(i + 1);
+                }
+            });
         });
-
         it('Первышаем лимит сессиий', async () => {
             const res = await request.post('/api/auth/login').send({
                 "email": "mail1@mail.ru",
@@ -361,7 +372,7 @@ describe('Защита Redis от переполнения одним польз
         it('Выполняем выход', async () => {
             const res = await request.post('/api/auth/logout').set('Cookie', `${cookie__value};`).send()
 
-            expect(res.status).toEqual(302);
+            expect(res.status).toEqual(200);
 
 
             const keys = await redisClient.v4.KEYS('*')

@@ -51,8 +51,10 @@ class UserController {
         try {
 
             sessionService.remove(req,true, (err)=>{
-                res.redirect(config.app.client_url) // will always fire after session is destroyed
+                // res.redirect(config.app.client_url) // will always fire after session is destroyed
+                res.json();
             })
+
             // req.session.destroy((err) => {
             //     res.redirect(config.app.client_url) // will always fire after session is destroyed
             // })
