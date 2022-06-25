@@ -5,6 +5,7 @@ import publicRoomSeeder from "../../src/seeders/publicRoomSeeder";
 import {PublicRoomDTO} from "../../src/dtos/publicRoomDTO";
 import {PublicRoomModel} from "../../src/models/roomModel";
 import {getPublicRoomByName} from "../../src/dao/publicRoomDAO";
+import config from "../../src/config/default"
 
 
 // jest.setTimeout(30000);
@@ -13,7 +14,7 @@ describe('Сеятель публичных комнат', () => {
     const countUsers = 10;
 
     let rooms: PublicRoomDTO[];
-    const countRoomsByUser = 20;
+    const countRoomsByUser = config.userLimits.publicRoom.publicRoomCreateInDay;
     describe('Создание пользователей', () => {
         it(`Создадим ${countUsers} пользователей`, async () => {
             let insertedSuccess = false;
@@ -30,7 +31,7 @@ describe('Сеятель публичных комнат', () => {
         it(`Создадим ${countRoomsByUser} публичных комнат`, async () => {
             let insertedSuccess = false;
             try {
-                rooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countRoomsByUser, users.map(u=>u.id),"");
+                rooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countRoomsByUser, users.map(u=>u.id),"", false);
                 insertedSuccess = true;
             } finally {
                 expect(insertedSuccess).toEqual(true)

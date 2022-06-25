@@ -7,6 +7,7 @@ import ApiError from "../exceptions/ApiError";
 import UserDto from "../dtos/userDTO";
 
 import {createUser,  findUserByEmail} from "../dao/userDAO";
+import sessionAuthLimitService from "./sessionAuthLimitService";
 
 class UserService {
     async registration(email:string, login:string, password:string) {
@@ -29,8 +30,10 @@ class UserService {
         }
         const isPassEquals = await bcrypt.compare(password, user.password);
         if (!isPassEquals) {
+            await sessionAuthLimitService.add(email)
             throw ApiError.BadRequest('Неверный email или пароль');
         }
+        await sessionAuthLimitService.remove(email)
         const userDto = new UserDto(user);
 
         return userDto;

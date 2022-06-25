@@ -3,7 +3,8 @@ import {body} from "express-validator";
 import {findUserByEmail, findUserByLogin} from "../dao/userDAO";
 import userController from "../controllers/userController";
 import authMiddleware from "../middlewares/authMiddleware";
-
+import sessionAuthLimitService from "../service/sessionAuthLimitService";
+import config from "../config/default"
 
 export default function addAuthRoutes(router:Router){
     router.post('/auth/registration',
@@ -39,6 +40,14 @@ export default function addAuthRoutes(router:Router){
                     return Promise.reject('Неправильный email или пароль');
                 }
             });
+        })
+            .custom((value)=>{
+            return sessionAuthLimitService.getUserData(value).then(data=>{
+                if (data && data.blocked && (new Date() < new Date(data.blocked)))
+                {
+                    return Promise.reject(`Достигнут лимит поптыок входа, блокировка авторизации на ${config.userLimits.auth.blockTimeMinutes} минут`);
+                }
+            })
         }),
         body('password').exists().withMessage("пароль не указан").isLength({min: 5, max: 32}).withMessage("Некорректная длина пароля"),
         userController.login);

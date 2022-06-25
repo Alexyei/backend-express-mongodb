@@ -67,7 +67,7 @@ describe('Максимальное количество вступлений в 
         it(`Успешно создаём ${countPublicRoomsCreate}`, async () => {
             let insertedSuccess = false;
             try {
-                publicRooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countPublicRoomsCreate, users.map(u=>u.id), "");
+                publicRooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countPublicRoomsCreate, users.map(u=>u.id), "", false);
                 insertedSuccess = true;
             } finally {
                 expect(insertedSuccess).toEqual(true)

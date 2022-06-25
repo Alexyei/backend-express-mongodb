@@ -5,7 +5,7 @@ import {PublicRoomDTO} from "../../src/dtos/publicRoomDTO";
 import MessageModel from "../../src/models/messageModel";
 import messagesSeeder from "../../src/seeders/messagesSeeder";
 import MessageDTO from "../../src/dtos/messageDTO";
-
+import config from "../../src/config/default"
 
 jest.setTimeout(30000);
 describe('Сеятель сообщений в публичных комнатах', () => {
@@ -13,7 +13,7 @@ describe('Сеятель сообщений в публичных комната
     const countUsers = 5;
 
     let rooms: PublicRoomDTO[];
-    const countRoomsByUser = 10;
+    const countRoomsByUser = config.userLimits.publicRoom.publicRoomCreateInDay;
 
     let messages: MessageDTO[];
     const countMessageByUserByRoom = 5;
@@ -33,9 +33,10 @@ describe('Сеятель сообщений в публичных комната
         it(`Создадим ${countRoomsByUser} публичных комнат`, async () => {
             let insertedSuccess = false;
             try {
-                rooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countRoomsByUser, users.map(u=>u.id),"");
+                rooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countRoomsByUser, users.map(u=>u.id),"", false);
                 insertedSuccess = true;
-            } finally {
+            }
+            finally {
                 expect(insertedSuccess).toEqual(true)
             }
         });

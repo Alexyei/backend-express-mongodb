@@ -1,4 +1,3 @@
-import config from "../config/default"
 import {createUserLimits, getUserLimits, setUserLimits} from "../dao/userLimitsDAO";
 import {IUserLimits} from "../models/userLimitsModel";
 class UserLimitsService{

@@ -1,8 +1,6 @@
 import {NextFunction, Request, Response} from "express";
 import {validationResult} from "express-validator";
 import ApiError from "../exceptions/ApiError";
-import userService from "../service/userService";
-import sessionService from "../service/sessionService";
 import messageService from "../service/messageService";
 
 class MessageController{

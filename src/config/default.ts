@@ -32,6 +32,11 @@ export default {
         },
         privateRoom:{
             privateRoomCreateInDay: 50
+        },
+        auth: {
+            // При превышении данного лимита, каждый раз когда он вводит неверный пароль он будет заблокирован на 10 минут
+            passwordErrors: 5,
+            blockTimeMinutes: 10
         }
 
     }

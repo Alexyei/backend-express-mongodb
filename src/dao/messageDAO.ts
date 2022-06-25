@@ -23,7 +23,7 @@ export interface IMessageDAOShort {
 import MessageModel from "../models/messageModel";
 import messageModel from "../models/messageModel";
 import mongoose from "mongoose";
-
+import { DocumentDefinition, FilterQuery } from "mongoose";
 export async function createMessage(roomID: string, authorID: string, message: string, recipientsIDs: string[]) {
     return await MessageModel.create({room: roomID, author: authorID, message, recipients: recipientsIDs})
 }

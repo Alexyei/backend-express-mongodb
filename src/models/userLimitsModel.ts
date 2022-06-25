@@ -7,7 +7,7 @@ export interface IUserLimitsDocument extends Document{
     publicRoomJoinInDay: number,
     privateRoomCreateInDay: number,
     publicMessageInDay: number,
-    privateMessageInDay:number
+    privateMessageInDay:number,
 }
 
 // export type IUserLimits = {

@@ -73,7 +73,7 @@ describe('Отправка сообщений в публичных комнат
         it(`Создадим ${countRoomsByUser} публичных комнат`, async () => {
             let insertedSuccess = false;
             try {
-                rooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countRoomsByUser, [user1.id, ...users.map(u => u.id)], "");
+                rooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countRoomsByUser, [user1.id, ...users.map(u => u.id)], "", false);
                 insertedSuccess = true;
             } finally {
                 expect(insertedSuccess).toEqual(true)

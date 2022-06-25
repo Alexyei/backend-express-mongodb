@@ -5,6 +5,7 @@ import publicRoomSeeder from "../../src/seeders/publicRoomSeeder";
 import {PublicRoomDTO} from "../../src/dtos/publicRoomDTO";
 import privateRoomSeeder from "../../src/seeders/privateRoomSeeder";
 
+jest.setTimeout(30000)
 describe('Максимальное количество новых комнат в день', () => {
 
     let cookie__value__user1 = ""
@@ -39,7 +40,7 @@ describe('Максимальное количество новых комнат 
         it(`Успешно создаём ${countPublicRooms}`, async () => {
             let insertedSuccess = false;
             try {
-                publicRooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countPublicRooms, [user1.id],"");
+                publicRooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(countPublicRooms, [user1.id],"", false);
                 insertedSuccess = true;
             } finally {
                 expect(insertedSuccess).toEqual(true)
@@ -51,7 +52,7 @@ describe('Максимальное количество новых комнат 
         it(`Пробуем создать ещё одну комнату`, async () => {
             let insertedSuccess = false;
             try {
-                publicRooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(1, [user1.id],"");
+                publicRooms = await publicRoomSeeder.insertPublicRoomsByUserIDsWithJoin(1, [user1.id],"", false);
                 insertedSuccess = true;
             }
             catch (err:any){

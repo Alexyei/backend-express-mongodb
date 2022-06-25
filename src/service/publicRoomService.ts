@@ -24,8 +24,8 @@ import ApiError from "../exceptions/ApiError";
 import config from '../config/default'
 import UserLimitsService from './userLimitsService'
 class PublicRoomService{
-    async create(name:string, password:string, userID:string) {
-        if (!(await UserLimitsService.checkUserLimit(userID,"publicRoomCreateInDay")))
+    async create(name:string, password:string, userID:string, withoutLimitsMode=false) {
+        if (!withoutLimitsMode && !(await UserLimitsService.checkUserLimit(userID,"publicRoomCreateInDay")))
             throw ApiError.BadRequest('Достигнут дневной лимит создания публичных комнат')
 
         const hashPassword = password ? await bcrypt.hash(password, 3) : null;
@@ -41,7 +41,7 @@ class PublicRoomService{
         return roomDto;
     }
 
-    async join(name:string, password:string, userID:string) {
+    async join(name:string, password:string, userID:string, withoutLimitsMode=false) {
         const room = await getPublicRoomByName(name)
         if (room === null) {
             throw ApiError.BadRequest('Комната с таким названием не найдена')
@@ -54,10 +54,10 @@ class PublicRoomService{
             throw ApiError.BadRequest('Вы уже вступили в эту комнату');
         }
 
-        if (room.users.length >= config.userLimits.publicRoom.maxUsersCount)
+        if (!withoutLimitsMode && room.users.length >= config.userLimits.publicRoom.maxUsersCount)
             throw ApiError.BadRequest(`Количество участник комнаты не может быть больше ${config.userLimits.publicRoom.maxUsersCount}`)
 
-        if (!(await UserLimitsService.checkUserLimit(userID,"publicRoomJoinInDay")))
+        if (!withoutLimitsMode && !(await UserLimitsService.checkUserLimit(userID,"publicRoomJoinInDay")))
             throw ApiError.BadRequest('Достигнут дневной лимит вступления в публичные комнаты')
 
         await this.joinUserToRoom(name,userID)
