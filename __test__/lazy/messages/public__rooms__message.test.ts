@@ -15,7 +15,7 @@ async function successSendMessage(cookie: string, roomID: string, userID: string
     expect(data.room).toEqual(roomID)
     return data;
 }
-
+jest.setTimeout(30000)
 describe('Отправка сообщений в публичных комнатах lazy', () => {
 
     let cookie__value__user1 = ""

@@ -7,7 +7,7 @@ import privateRoomSeeder from "../../../src/seeders/privateRoomSeeder";
 import {IPrivateRoomDocument} from "../../../src/models/roomModel";
 import {PrivateRoomWithMessagesLazyDTO} from "../../../src/dtos/privateRoomDTO";
 
-// jest.setTimeout(30000);
+ jest.setTimeout(30000);
 describe('Отправка сообщений в приватных комнатах lazy', () => {
 
     let cookie__value__user1 = ""
